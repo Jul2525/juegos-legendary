@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Buscador de Palabras del Oso Sabroso</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f5f5dc;
+    text-align: center;
+    margin: 20px;
+  }
+  #palabra {
+    font-size: 2em;
+    letter-spacing: 10px;
+    margin: 20px;
+  }
+  #mensaje {
+    font-size: 1.2em;
+    margin: 20px;
+  }
+  #letras {
+    margin: 20px;
+  }
+  button.letra {
+    width: 40px;
+    height: 40px;
+    margin: 3px;
+    font-size: 1.2em;
+    cursor: pointer;
+  }
+  #intentos {
+    margin: 20px;
+    font-weight: bold;
+  }
+  #btnReinicio {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h1>Buscador de Palabras del Oso Sabroso</h1>
+<div id="palabra">_ _ _ _ _</div>
+<div id="mensaje"></div>
+<div id="letras"></div>
+<div id="intentos">Intentos restantes: 8</div>
+<button id="btnReinicio">Reiniciar Juego</button>
+
+<audio id="sonidoGanaste" src="ganaste.mp3"></audio>
+<audio id="sonidoPerdiste" src="perdiste.mp3"></audio>
+
+<script>
+const palabras = [
+  "sabroso","cookingdiary","dinosaurio","manzana","platano","sandia",
+  "dinero","eucalipto","cocina","abuelo","miercoles","preguntar",
+  "aprender","computadora","naranja","amarillo","elefante","tigre",
+  "primavera","verano","morado","ventana","positivo","celular",
+  "pantalla","febrero","sabado","sabana","entender","lampara",
+  "principe","princesa","unicornio","guitarra","trompeta","bateria",
+  "verde","invierno","legendario","violin"
+];
+
+let palabra = "";
+let palabraOculta = [];
+let intentos = 8;
+let letrasUsadas = new Set();
+
+function nuevaPalabra() {
+  palabra = palabras[Math.floor(Math.random() * palabras.length)].toLowerCase();
+  palabraOculta = Array(palabra.length).fill("_");
+  intentos = 8;
+  letrasUsadas.clear();
+  document.getElementById("mensaje").textContent = "";
+  document.getElementById("intentos").textContent = "Intentos restantes: " + intentos;
+  mostrarPalabra();
+  crearBotonesLetras();
+}
+
+function mostrarPalabra() {
+  document.getElementById("palabra").textContent = palabraOculta.join(" ");
+}
+
+function crearBotonesLetras() {
+  const letrasDiv = document.getElementById("letras");
+  letrasDiv.innerHTML = "";
+  for (let i = 65; i <= 90; i++) {
+    const letra = String.fromCharCode(i);
+    const boton = document.createElement("button");
+    boton.textContent = letra;
+    boton.className = "letra";
+    boton.onclick = () => adivinarLetra(letra.toLowerCase());
+    letrasDiv.appendChild(boton);
+  }
+}
+
+function adivinarLetra(letra) {
+  if (letrasUsadas.has(letra) || intentos <= 0) return;
+  letrasUsadas.add(letra);
+
+  if (palabra.includes(letra)) {
+    for (let i = 0; i < palabra.length; i++) {
+      if (palabra[i] === letra) {
+        palabraOculta[i] = letra;
+      }
+    }
+    mostrarPalabra();
+    if (!palabraOculta.includes("_")) {
+      document.getElementById("mensaje").textContent = "¡Ganaste! 🎉";
+      document.getElementById("sonidoGanaste").play();
+      desactivarBotones();
+    }
+  } else {
+    intentos--;
+    document.getElementById("intentos").textContent = "Intentos restantes: " + intentos;
+    // Mensaje de letra incorrecta eliminado
+    if (intentos === 0) {
+      document.getElementById("mensaje").textContent = "¡Perdiste! La palabra era: " + palabra;
+      document.getElementById("sonidoPerdiste").play();
+      desactivarBotones();
+    }
+  }
+  desactivarBotonLetra(letra);
+}
+
+function desactivarBotonLetra(letra) {
+  const botones = document.querySelectorAll("#letras button");
+  botones.forEach(boton => {
+    if (boton.textContent.toLowerCase() === letra) {
+      boton.disabled = true;
+    }
+  });
+}
+
+function desactivarBotones() {
+  const botones = document.querySelectorAll("#letras button");
+  botones.forEach(boton => boton.disabled = true);
+}
+
+document.getElementById("btnReinicio").addEventListener("click", () => {
+  nuevaPalabra();
+});
+
+// Empieza el juego
+nuevaPalabra();
+</script>
+
+</body>
+</html>
